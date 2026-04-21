@@ -100,7 +100,7 @@
             transform: translateY(0);
           }
         }
-        #gallery img {
+        img[data-lightbox-image="true"] {
             cursor: zoom-in;
         }
         .tap-fast {
@@ -926,18 +926,32 @@ Gọi 0869.555.444
       })();
 
       (function () {
-        const gallery = document.getElementById("gallery");
         const lightbox = document.getElementById("gallery-lightbox");
         const lightboxImage = document.getElementById("lightbox-image");
         const closeButton = document.getElementById("lightbox-close");
         const prevButton = document.getElementById("lightbox-prev");
         const nextButton = document.getElementById("lightbox-next");
-        const galleryImages = gallery ? Array.from(gallery.querySelectorAll("img")) : [];
+
+        function isZoomableImage(image) {
+          if (!(image instanceof HTMLImageElement)) {
+            return false;
+          }
+          if (!image.closest("#products")) {
+            return false;
+          }
+          return true;
+        }
+
+        const galleryImages = Array.from(document.querySelectorAll("img")).filter(isZoomableImage);
         let currentIndex = -1;
 
-        if (!gallery || !lightbox || !lightboxImage || !closeButton || !prevButton || !nextButton || galleryImages.length === 0) {
+        if (!lightbox || !lightboxImage || !closeButton || !prevButton || !nextButton || galleryImages.length === 0) {
           return;
         }
+
+        galleryImages.forEach(function (image) {
+          image.setAttribute("data-lightbox-image", "true");
+        });
 
         function openLightbox(index) {
           currentIndex = (index + galleryImages.length) % galleryImages.length;
@@ -947,6 +961,8 @@ Gọi 0869.555.444
           lightbox.classList.remove("hidden");
           lightbox.classList.add("flex");
           lightbox.setAttribute("aria-hidden", "false");
+          prevButton.classList.toggle("hidden", galleryImages.length <= 1);
+          nextButton.classList.toggle("hidden", galleryImages.length <= 1);
           document.body.classList.add("overflow-hidden");
         }
 
@@ -966,7 +982,7 @@ Gọi 0869.555.444
           document.body.classList.remove("overflow-hidden");
         }
 
-        gallery.addEventListener("click", function (event) {
+        document.addEventListener("click", function (event) {
           const target = event.target;
           if (!(target instanceof HTMLImageElement)) {
             return;
